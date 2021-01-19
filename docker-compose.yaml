@@ -2,12 +2,16 @@ version: '3'
 services: 
   android-analytics:
     build:
+      context: ./
+      dockerfile: ./services/android-analytics/Dockerfile
     depends_on:
     ports: 
     environment:
     volumes: 
   ios-analytics:
     build:
+      context: ./
+      dockerfile: ./services/ios-analytics/Dockerfile
     depends_on: 
     ports: 
     environment: 
