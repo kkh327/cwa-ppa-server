@@ -1,0 +1,14 @@
+version: '3'
+services: 
+  android-analytics:
+    build:
+    depends_on:
+    ports: 
+    environment:
+    volumes: 
+  ios-analytics:
+    build:
+    depends_on: 
+    ports: 
+    environment: 
+    volumes:  
