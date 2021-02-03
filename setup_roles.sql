@@ -1,0 +1,44 @@
+CREATE SCHEMA IF NOT EXISTS data_donation;
+
+CREATE ROLE cwa_ppdd_user
+  NOLOGIN
+  NOSUPERUSER
+  NOINHERIT
+  NOCREATEDB
+  NOCREATEROLE
+  NOREPLICATION;
+
+GRANT CONNECT ON DATABASE cwa TO cwa_ppdd_user;
+GRANT USAGE ON SCHEMA data_donation TO cwa_ppdd_user;
+
+CREATE ROLE cwa_ppdd_flyway
+  NOLOGIN
+  NOSUPERUSER
+  INHERIT
+  NOCREATEDB
+  NOCREATEROLE
+  NOREPLICATION
+  IN ROLE cwa_ppdd_user;
+
+/* Flyway user needs to have full access to schema */
+GRANT CREATE ON SCHEMA data_donation TO cwa_ppdd_flyway;
+
+
+CREATE ROLE cwa_data_ppac
+  NOLOGIN
+  NOSUPERUSER
+  INHERIT
+  NOCREATEDB
+  NOCREATEROLE
+  NOREPLICATION
+  IN ROLE cwa_ppdd_user;
+
+
+CREATE ROLE cwa_data_edus
+   NOLOGIN
+   NOSUPERUSER
+   INHERIT
+   NOCREATEDB
+   NOCREATEROLE
+   NOREPLICATION
+   IN ROLE cwa_ppdd_user;
