@@ -15,12 +15,12 @@ import app.coronawarn.datadonation.common.persistence.domain.metrics.TestResultM
 import app.coronawarn.datadonation.common.persistence.service.PpaDataStorageRequest;
 import app.coronawarn.datadonation.common.protocols.internal.ppdd.ExposureRiskMetadata;
 import app.coronawarn.datadonation.common.protocols.internal.ppdd.PPADataIOS;
+import app.coronawarn.datadonation.common.protocols.internal.ppdd.PPADataRequestIOS;
 import app.coronawarn.datadonation.common.protocols.internal.ppdd.PPAExposureWindow;
 import app.coronawarn.datadonation.common.protocols.internal.ppdd.PPAExposureWindowInfectiousness;
 import app.coronawarn.datadonation.common.protocols.internal.ppdd.PPAKeySubmissionMetadata;
 import app.coronawarn.datadonation.common.protocols.internal.ppdd.PPANewExposureWindow;
 import app.coronawarn.datadonation.common.protocols.internal.ppdd.PPATestResultMetadata;
-import app.coronawarn.datadonation.common.protocols.internal.ppdd.PPADataRequestIOS;
 import app.coronawarn.datadonation.common.utils.TimeUtils;
 import app.coronawarn.datadonation.services.ppac.config.PpacConfiguration;
 import java.time.LocalDate;
@@ -36,7 +36,7 @@ public class PpaDataRequestIosConverterTest {
 
   @InjectMocks
   private PpaDataRequestIosConverter underTest;
-  
+
   private PpacConfiguration ppacConfig;
 
   @BeforeEach
@@ -45,7 +45,7 @@ public class PpaDataRequestIosConverterTest {
     ppacConfig.setMaxExposureWindowsToRejectSubmission(672);
     ppacConfig.setMaxExposureWindowsToStore(672);
   }
-  
+
   @Test
   public void testConvertToExposureWindow() {
     final Long epochSecondForNow = TimeUtils.getEpochSecondForNow();
@@ -172,7 +172,7 @@ public class PpaDataRequestIosConverterTest {
   }
 
   @Test
-  public void testConvertExposureRiskMetaData_emptyExposureMetrics() {
+  public void testConvertExposureRiskMetaDataExposureMetricsShouldBeEmpty() {
     final PPADataIOS payload = PPADataIOS.newBuilder()
         .addAllExposureRiskMetadataSet(Collections.emptyList())
         .addAllNewExposureWindows(Collections.emptyList())

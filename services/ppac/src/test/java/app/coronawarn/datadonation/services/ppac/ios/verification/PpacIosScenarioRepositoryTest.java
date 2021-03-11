@@ -29,7 +29,7 @@ class PpacIosScenarioRepositoryTest {
   ApiTokenRepository apiTokenRepository;
 
   @Test
-  void updateForEdus() {
+  void updateForEdusLastUsedEdusShouldNotBeNull() {
     ArgumentCaptor<ApiToken> argumentCaptor = ArgumentCaptor.forClass(ApiToken.class);
     ApiToken apiToken = ApiTokenBuilder.newBuilder().setApiToken("test").build();
     underTest.updateForEdus(apiToken);
@@ -39,7 +39,7 @@ class PpacIosScenarioRepositoryTest {
   }
 
   @Test
-  void updateForPpa() {
+  void updateForPpaLastUsedPpaShouldNotNull() {
     ArgumentCaptor<ApiToken> argumentCaptor = ArgumentCaptor.forClass(ApiToken.class);
     ApiToken apiToken = ApiTokenBuilder.newBuilder().setApiToken("test").build();
     underTest.updateForPpa(apiToken);
@@ -56,9 +56,8 @@ class PpacIosScenarioRepositoryTest {
     doThrow(DbActionExecutionException.class).when(apiTokenRepository)
         .insert(any(), any(), any(), any(), argumentCaptor.capture());
 
-    assertThatThrownBy(() -> {
-      underTest.saveForPpa(apiToken);
-    }).isExactlyInstanceOf(InternalError.class);
+    assertThatThrownBy(() -> underTest.saveForPpa(apiToken))
+        .isExactlyInstanceOf(InternalError.class);
   }
 
   @Test
@@ -69,8 +68,7 @@ class PpacIosScenarioRepositoryTest {
     doThrow(DbActionExecutionException.class).when(apiTokenRepository)
         .insert(any(), any(), any(), any(), argumentCaptor.capture());
 
-    assertThatThrownBy(() -> {
-      underTest.saveForEdus(apiToken);
-    }).isExactlyInstanceOf(InternalError.class);
+    assertThatThrownBy(() -> underTest.saveForEdus(apiToken))
+        .isExactlyInstanceOf(InternalError.class);
   }
 }

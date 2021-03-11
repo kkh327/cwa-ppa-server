@@ -22,15 +22,14 @@ import app.coronawarn.datadonation.common.protocols.internal.ppdd.PPATestResultM
 import app.coronawarn.datadonation.common.utils.TimeUtils;
 import app.coronawarn.datadonation.services.ppac.commons.web.DataSubmissionResponse;
 import app.coronawarn.datadonation.services.ppac.ios.client.domain.PerDeviceDataResponse;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
+import java.util.Base64;
+import java.util.Random;
 import java.util.UUID;
-import org.bouncycastle.util.encoders.Base64;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -178,15 +177,25 @@ public final class TestData {
     return UUID.randomUUID().toString();
   }
 
-  public static String buildBase64String(int length) {
-    char[] keyChars = new char[length];
-    Arrays.fill(keyChars, 'A');
-    String key = new String(keyChars);
-    return Base64.toBase64String(key.getBytes(Charset.defaultCharset()))
-        .substring(key.length() - length, key.length() + 1) + "=";
+  /**
+   * Returns a base64 string with the given length of l = 4n/3, where n is the given byteLength.
+   *
+   * @param byteLength the length of the byte array the base64 string is created from.
+   * @return a base64 encoded string.
+   */
+  public static String buildBase64String(int byteLength) {
+    byte[] randomBytes = new byte[byteLength];
+    new Random().nextBytes(randomBytes);
+    return Base64.getEncoder().encodeToString(randomBytes);
   }
 
-  public static String jsonify(PerDeviceDataResponse data) {
+  /**
+   * Returns the stringified json version of an object.
+   *
+   * @param data the data that should be jsonified
+   * @return an json object as string.
+   */
+  public static String jsonify(Object data) {
     ObjectMapper objectMapper = new ObjectMapper();
     String result = null;
     try {

@@ -33,6 +33,10 @@ ppac:
   max-exposure-windows-to-store: 672
   max-exposure-windows-to-reject-submission: 2688
   ios:
+    missing-or-incorrectly-formatted-device-token-payload: Missing or incorrectly formatted device token payload
+    ppac-ios-jwt-key-id: keyId
+    ppac-ios-jwt-signing-key: signingKey
+    ppac-ios-jwt-team-id: teamId
     min_device_token_length: 5
     max_device_token_length: 10
   android:

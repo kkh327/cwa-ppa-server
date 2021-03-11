@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import app.coronawarn.datadonation.common.protocols.internal.ppdd.EDUSOneTimePassword;
 import app.coronawarn.datadonation.common.protocols.internal.ppdd.EDUSOneTimePasswordRequestIOS;
+import app.coronawarn.datadonation.services.ppac.ios.client.IosDeviceApiClient;
 import java.util.UUID;
 import javax.validation.ConstraintValidatorContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +27,9 @@ public class EdusOneTimePasswordRequestIosValidatorTest {
 
   @MockBean
   private ConstraintValidatorContext.ConstraintViolationBuilder violationBuilder;
+
+  @MockBean
+  private IosDeviceApiClient iosDeviceApiClient;
 
   @BeforeEach
   public void setup() {

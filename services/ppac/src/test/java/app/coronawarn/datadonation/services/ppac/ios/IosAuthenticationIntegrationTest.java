@@ -58,8 +58,10 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@DirtiesContext
 public class IosAuthenticationIntegrationTest {
 
   private static final String IOS_SERVICE_URL = UrlConstants.IOS + UrlConstants.DATA;
@@ -95,7 +97,33 @@ public class IosAuthenticationIntegrationTest {
   }
 
   @Test
-  void testSubmitData_successfulSubmission_shouldFailAfterSecondSurvey() {
+  public void testSubmitDataShouldThrowApiTokenQuotaExceeded() {
+    // given
+    // A valid device Token and an existing ApiToken. So while authenticating the existing api token we need to check if
+    // this api token
+    // was already used today for PPA. If so then NORMALLY there would be a API_TOKEN_QUOTA_EXCEEDED
+    String deviceToken = buildBase64String(this.configuration.getIos().getMinDeviceTokenLength() + 1);
+    String apiToken = buildUuid();
+    PerDeviceDataResponse data = buildIosDeviceData(OffsetDateTime.now(), true);
+    PPADataRequestIOS submissionPayloadIos = buildPPADataRequestIosPayload(apiToken, deviceToken, false);
+
+    OffsetDateTime now = OffsetDateTime.now();
+    Long expirationDate = getLastDayOfMonthFor(now);
+    long timestamp = getEpochSecondFor(now);
+
+    apiTokenRepository.insert(apiToken, expirationDate, expirationDate, timestamp, timestamp);
+    // when
+    when(iosDeviceApiClient.queryDeviceData(anyString(), any())).thenReturn(ResponseEntity.ok(jsonify(data)));
+    ResponseEntity<DataSubmissionResponse> response = postSubmission(submissionPayloadIos, testRestTemplate,
+        IOS_SERVICE_URL, false);
+
+    // then
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
+    assertThat(response.getBody().getErrorCode()).isEqualTo(PpacErrorCode.API_TOKEN_QUOTA_EXCEEDED);
+  }
+
+  @Test
+  void testSubmitDataSuccessfulSubmissionShouldFailAfterSecondRequest() {
     final String deviceToken = buildBase64String(this.configuration.getIos().getMinDeviceTokenLength() + 1);
     final String deviceTokenForSurvey = buildBase64String(this.configuration.getIos().getMinDeviceTokenLength() + 2);
     final String apiToken = buildUuid();
@@ -149,7 +177,7 @@ public class IosAuthenticationIntegrationTest {
   }
 
   @Test
-  public void testSubmitData_authenticateExistingApiToken_successfulPpac() {
+  public void testSubmitDataShouldAuthenticateExistingApiTokenSuccessfully() {
     final String deviceToken = buildBase64String(this.configuration.getIos().getMinDeviceTokenLength() + 1);
     final String apiToken = buildUuid();
     final OffsetDateTime now = OffsetDateTime.now();
@@ -171,7 +199,7 @@ public class IosAuthenticationIntegrationTest {
   }
 
   @Test
-  public void testSubmitData_invalidPayload() {
+  public void testSubmitDataShouldThrowDeviceTokenSyntaxError() {
     PPADataRequestIOS submissionPayloadIos = buildInvalidPPADataRequestIosPayload();
     ResponseEntity<DataSubmissionResponse> response = postSubmission(submissionPayloadIos, testRestTemplate,
         IOS_SERVICE_URL, false);
@@ -183,7 +211,7 @@ public class IosAuthenticationIntegrationTest {
   }
 
   @Test
-  public void testSubmitData_storeDeviceTokenHash_uniqueKeyViolation() {
+  public void testSubmitDataShouldThrowUniqueKeyViolation() {
     // given
     // Per Device Data that was updated last month
     String deviceToken = buildBase64String(this.configuration.getIos().getMinDeviceTokenLength() + 1);
@@ -212,7 +240,7 @@ public class IosAuthenticationIntegrationTest {
   }
 
   @Test
-  public void testSubmitData_errorUpdatingPerDevicedata_rollback() {
+  public void testSubmitDataErrorUpdatingPerDeviceDataShouldRollback() {
     // Have no API Token YET
     // and a submission that corresponds to per-device data that was last updated last month.
     // Per-Device Data should be updated and a new API Token should be created with expiration set to end of the current month.
@@ -235,7 +263,7 @@ public class IosAuthenticationIntegrationTest {
   }
 
   @Test
-  public void testSubmitData_updatePerDeviceData() {
+  public void testSubmitDataShouldUpdatePerDeviceData() {
     // Have no API Token YET
     // and a submission that correspond to per-device data that was last updated last month
     // Per-Device Data should be updated and a new API Token should be created with expiration set to end of the current month.
@@ -279,7 +307,7 @@ public class IosAuthenticationIntegrationTest {
   }
 
   @Test
-  public void testSubmitData_apiTokenAlreadyUsed() {
+  public void testSubmitDataShouldThrowApiTokenAlreadyUsed() {
     // Toy ios device data that has last update NOW - this will be compared against current server time
     // so this means that someone altered the per device data already this month with an api token.
 
@@ -304,7 +332,7 @@ public class IosAuthenticationIntegrationTest {
   }
 
   @Test
-  public void testSubmitData_apiTokenExpired() {
+  public void testSubmitDataShouldThrowApiTokenExpired() {
     // Existing API Token that expired LAST month is compared against current timestamp
     // submission will fail because the API Token expired last month.
 
@@ -336,7 +364,7 @@ public class IosAuthenticationIntegrationTest {
   }
 
   @Test
-  public void testSubmitData_failRetrievingPerDeviceData_invalidDeviceToken() {
+  public void testSubmitDataShouldThrowInvalidDeviceToken() {
     // given
     String deviceToken = buildBase64String(this.configuration.getIos().getMinDeviceTokenLength() + 1);
     String apiToken = buildUuid();
@@ -352,11 +380,10 @@ public class IosAuthenticationIntegrationTest {
     assertThat(response.getBody()).isNotNull();
     assertThat(response.getBody()).isInstanceOf(DataSubmissionResponse.class);
     assertThat(response.getBody().getErrorCode()).isEqualTo(PpacErrorCode.DEVICE_TOKEN_INVALID);
-
   }
 
   @Test
-  public void testSubmitData_failRetrievingPerDeviceData_internalServerError() {
+  public void testSubmitDataShouldThrowInternalServerError() {
     // Querying the apple device api returns a statuscode that is not 400 nor 200
 
     // given
@@ -375,7 +402,7 @@ public class IosAuthenticationIntegrationTest {
   }
 
   @Test
-  public void testSubmitData_invalidPerDeviceData() {
+  public void testSubmitDataShouldThrowDeviceBlocked() {
     // Toy data contains invalid values for bot0 and bit1 (both have state 1)
 
     // given
@@ -406,6 +433,4 @@ public class IosAuthenticationIntegrationTest {
   private Request buildFakeFeignRequest() {
     return Request.create(HttpMethod.POST, "", new HashMap<>(), Body.create(""), null);
   }
-
-
 }

@@ -73,7 +73,7 @@ public class ApiTokenAuthenticationStrategyIntegrationTest {
   }
 
   @Test
-  public void testSubmitData_apiTokenAlreadyUsed_skipValidation() {
+  public void testSubmitDataApiTokenAlreadyUsedShouldSkipValidationWithHeader() {
     // Toy ios device data that has last update NOW - this will be compared against current server time
     // so this means that someone altered the per device data already this month with an api token. BUT skipValidation is enabled with "test" Profile.
 
@@ -103,7 +103,7 @@ public class ApiTokenAuthenticationStrategyIntegrationTest {
   }
 
   @Test
-  public void testSubmitData_apiTokenAlreadyUsed() {
+  public void testSubmitDataShouldThrowApiTokenAlreadyIssued() {
     // Toy ios device data that has last update NOW - this will be compared against current server time
     // so this means that someone altered the per device data already this month with an api token.
 

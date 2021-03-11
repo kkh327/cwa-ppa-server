@@ -1,15 +1,15 @@
 package app.coronawarn.datadonation.services.ppac.ios.controller.validation;
 
+import static app.coronawarn.datadonation.services.ppac.ios.testdata.TestData.buildBase64String;
+import static app.coronawarn.datadonation.services.ppac.ios.testdata.TestData.buildPPADataRequestIosPayload;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import app.coronawarn.datadonation.common.protocols.internal.ppdd.PPACIOS;
 import app.coronawarn.datadonation.common.protocols.internal.ppdd.PPADataRequestIOS;
 import app.coronawarn.datadonation.services.ppac.config.PpacConfiguration;
-import java.nio.charset.Charset;
-import java.util.Base64;
+import app.coronawarn.datadonation.services.ppac.ios.client.IosDeviceApiClient;
 import java.util.UUID;
 import javax.validation.ConstraintValidatorContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +34,9 @@ public class PpaDataRequestIosPayloadValidatorTest {
   @MockBean
   private ConstraintValidatorContext.ConstraintViolationBuilder violationBuilder;
 
+  @MockBean
+  private IosDeviceApiClient iosDeviceApiClient;
+
   @BeforeEach
   public void setup() {
     context = mock(ConstraintValidatorContext.class);
@@ -43,54 +46,44 @@ public class PpaDataRequestIosPayloadValidatorTest {
   }
 
   @Test
-  public void testValidatePayload_successfulValidation() {
+  public void testValidatePayloadValidationShouldBeSuccessful() {
     String base64String = buildBase64String(configuration.getIos().getMinDeviceTokenLength() + 1);
 
-    PPADataRequestIOS payload = buildPPADataRequestIosPayload(base64String, UUID.randomUUID().toString());
+    PPADataRequestIOS payload = buildPPADataRequestIosPayload(UUID.randomUUID().toString(), base64String, true);
 
     assertThat(underTest.isValid(payload, context)).isTrue();
   }
 
   @Test
-  public void testValidatePayload_invalidDeviceTokenWrongMinLength() {
-    String deviceToken = buildBase64String(configuration.getIos().getMinDeviceTokenLength() - 1);
-    PPADataRequestIOS payload = buildPPADataRequestIosPayload(deviceToken, UUID.randomUUID().toString());
+  public void testValidatePayloadValidationShouldFailInvalidDeviceTokenWrongMinLength() {
+    String deviceToken = buildBase64String(configuration.getIos().getMinDeviceTokenLength() - 4);
+    PPADataRequestIOS payload = buildPPADataRequestIosPayload(UUID.randomUUID().toString(), deviceToken, true);
 
     assertThat(underTest.isValid(payload, context)).isFalse();
   }
 
   @Test
-  public void testValidatePayload_invalidDeviceTokenWrongMaxLength() {
+  public void testValidatePayloadValidationShouldFailInvalidDeviceTokenWrongMaxLength() {
     String deviceToken = buildBase64String(configuration.getIos().getMaxDeviceTokenLength() + 1);
-    PPADataRequestIOS payload = buildPPADataRequestIosPayload(deviceToken, UUID.randomUUID().toString());
+    PPADataRequestIOS payload = buildPPADataRequestIosPayload(UUID.randomUUID().toString(), deviceToken, true);
 
     assertThat(underTest.isValid(payload, context)).isFalse();
   }
 
   @Test
-  public void testValidatePayload_invalidDeviceTokenNoBase64() {
-    final PPADataRequestIOS payload = buildPPADataRequestIosPayload("notbase64", UUID.randomUUID().toString());
+  public void testValidatePayloadValidationShouldFailInvalidDeviceTokenNoBase64() {
+    final PPADataRequestIOS payload = buildPPADataRequestIosPayload(UUID.randomUUID().toString(), "notbase64", true);
 
     assertThat(underTest.isValid(payload, context)).isFalse();
   }
 
   @Test
-  public void testValidatePayload_invalidApiToken() {
+  public void testValidatePayloadValidationShouldFailInvalidApiToken() {
     String base64String = buildBase64String(configuration.getIos().getMinDeviceTokenLength() + 1);
-    PPADataRequestIOS payload = buildPPADataRequestIosPayload(base64String, "apiToken_invalid");
+    PPADataRequestIOS payload = buildPPADataRequestIosPayload("apiToken_invalid", base64String, true);
 
     assertThat(underTest.isValid(payload, context)).isFalse();
   }
 
-  private String buildBase64String(int length) {
-    String key = "thisIsAReallyLongDeviceToken";
-    return Base64.getEncoder().encodeToString(key.getBytes(Charset.defaultCharset()))
-        .substring(key.length() - length, key.length());
-  }
 
-  private PPADataRequestIOS buildPPADataRequestIosPayload(String base64String, String apiToken_invalid) {
-    PPACIOS authIos = PPACIOS.newBuilder().setApiToken(apiToken_invalid).setDeviceToken(base64String).build();
-
-    return PPADataRequestIOS.newBuilder().setAuthentication(authIos).build();
-  }
 }
