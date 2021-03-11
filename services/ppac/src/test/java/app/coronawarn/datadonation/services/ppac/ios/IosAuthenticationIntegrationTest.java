@@ -61,7 +61,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext
 public class IosAuthenticationIntegrationTest {
 
   private static final String IOS_SERVICE_URL = UrlConstants.IOS + UrlConstants.DATA;

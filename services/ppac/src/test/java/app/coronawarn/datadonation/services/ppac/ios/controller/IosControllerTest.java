@@ -54,7 +54,6 @@ import org.springframework.test.context.ActiveProfiles;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestBeanConfig.class)
 @ActiveProfiles("test")
-@DirtiesContext
 public class IosControllerTest {
 
   private static final String IOS_OTP_URL = UrlConstants.IOS + UrlConstants.OTP;

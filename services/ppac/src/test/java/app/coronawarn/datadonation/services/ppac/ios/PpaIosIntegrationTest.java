@@ -32,7 +32,6 @@ import org.springframework.test.annotation.DirtiesContext;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @Profile("test")
-@DirtiesContext
 public class PpaIosIntegrationTest {
 
   @Autowired

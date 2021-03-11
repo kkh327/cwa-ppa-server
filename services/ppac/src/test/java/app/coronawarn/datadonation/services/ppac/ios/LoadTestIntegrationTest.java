@@ -41,7 +41,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("loadtest")
-@DirtiesContext
 public class LoadTestIntegrationTest {
 
   private static final String IOS_SERVICE_URL = UrlConstants.IOS + UrlConstants.DATA;
