@@ -19,6 +19,7 @@ import app.coronawarn.datadonation.common.persistence.domain.ApiToken;
 import app.coronawarn.datadonation.common.persistence.repository.ApiTokenRepository;
 import app.coronawarn.datadonation.common.persistence.repository.DeviceTokenRepository;
 import app.coronawarn.datadonation.common.protocols.internal.ppdd.PPADataRequestIOS;
+import app.coronawarn.datadonation.common.utils.TimeUtils;
 import app.coronawarn.datadonation.services.ppac.commons.web.DataSubmissionResponse;
 import app.coronawarn.datadonation.services.ppac.config.PpacConfiguration;
 import app.coronawarn.datadonation.services.ppac.ios.client.IosDeviceApiClient;
@@ -26,6 +27,7 @@ import app.coronawarn.datadonation.services.ppac.ios.client.domain.PerDeviceData
 import app.coronawarn.datadonation.services.ppac.ios.verification.apitoken.authentication.TestApiTokenAuthenticationStrategy;
 import app.coronawarn.datadonation.services.ppac.logging.PpacErrorCode;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,6 +72,39 @@ public class ApiTokenAuthenticationStrategyIntegrationTest {
     apiTokenRepository.deleteAll();
     deviceTokenRepository.deleteAll();
     when(jwtProvider.generateJwt()).thenReturn("jwt");
+  }
+
+  @Test
+  public void test() {
+    // given is an  existing api token that is NOT
+    // - checkApiTokenNotAlreadyExpired
+    // - check rate limit -> scenario.validate(iosScenarioValidator, apiToken);
+    // - scenario.update(ppacIosScenarioRepository, apiToken);
+    String apiToken = buildUuid();
+    final Long lastDayOfMonthForNow = TimeUtils.getLastDayOfMonthForNow();
+    final Long createdAt = TimeUtils.getEpochSecondsForNow();
+
+    // last used yesteray
+    final long lastUsedForPpa = TimeUtils.getLocalDateForNow().withDayOfMonth(1).atStartOfDay(
+        ZoneOffset.UTC).toEpochSecond();
+    final OffsetDateTime now = OffsetDateTime.now();
+    apiTokenRepository.insert(apiToken, lastDayOfMonthForNow, createdAt, null, lastUsedForPpa
+    );
+    final PerDeviceDataResponse perDeviceDataResponse = buildIosDeviceData(now.minusMonths(1), true);
+    String deviceToken = buildBase64String(this.configuration.getIos().getMinDeviceTokenLength() + 1);
+    PPADataRequestIOS submissionPayloadIos = buildPPADataRequestIosPayload(apiToken, deviceToken, false);
+    // when
+    when(iosDeviceApiClient.queryDeviceData(anyString(), any()))
+        .thenThrow(new RuntimeException()).thenReturn(ResponseEntity.ok(jsonify(perDeviceDataResponse)));
+
+    ResponseEntity<DataSubmissionResponse> response = postSubmission(submissionPayloadIos, testRestTemplate,
+        IOS_SERVICE_URL, true);
+
+    Optional<ApiToken> optionalApiToken = apiTokenRepository.findById(apiToken);
+    int i = 0;
+
+    ResponseEntity<DataSubmissionResponse> response2 = postSubmission(submissionPayloadIos, testRestTemplate,
+        IOS_SERVICE_URL, true);
   }
 
   @Test

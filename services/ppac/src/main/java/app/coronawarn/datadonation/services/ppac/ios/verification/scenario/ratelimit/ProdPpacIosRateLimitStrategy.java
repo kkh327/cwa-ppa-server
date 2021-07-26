@@ -40,7 +40,7 @@ public class ProdPpacIosRateLimitStrategy implements PpacIosRateLimitStrategy {
       LocalDate currentDateUtc = TimeUtils.getLocalDateForNow();
       LocalDate lastUsedForPpaUtc = getLocalDateFor(it);
       if (currentDateUtc.isEqual(lastUsedForPpaUtc)) {
-        throw new ApiTokenQuotaExceeded();
+        throw new ApiTokenQuotaExceeded(); // 429
       }
     });
   }

@@ -44,11 +44,14 @@ public class PpacProcessor {
   public void validate(PPACIOS authentication, final boolean ignoreApiTokenAlreadyIssued,
       PpacScenario scenario) {
     apiTokenService.validateLocally(authentication, scenario);
+    // validateLocally checks if the api token already exists --> checks if not expired and not used today
     String transactionId = UUID.randomUUID().toString();
     PerDeviceDataResponse perDeviceDataResponse = perDeviceDataValidator
         .validateAndStoreDeviceToken(transactionId, authentication.getDeviceToken());
+    // perDeviceDataValidator --> communication with apple --> 200 ok
     apiTokenService
         .validate(perDeviceDataResponse, authentication, transactionId, ignoreApiTokenAlreadyIssued,
             scenario);
+    // validate --> if the api token does not yet exist then just insert a new api token^
   }
 }
