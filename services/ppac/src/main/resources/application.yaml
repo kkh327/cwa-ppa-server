@@ -17,7 +17,7 @@ spring:
 server:
   shutdown: graceful
   ssl:
-    enabled: true
+    enabled: false
     enabled-protocols: TLSv1.2+TLSv1.3
     protocol: TLS
     ciphers: >-
@@ -71,10 +71,10 @@ ppac:
   max-exposure-windows-to-reject-submission: ${PPAC_MAX_EXPOSURE_WINDOWS_TO_REJECT_SUBMISSION:2688}
   ios:
     missing-or-incorrectly-formatted-device-token-payload: Missing or incorrectly formatted device token payload
-    ppac-ios-jwt-key-id: ${PPAC_IOS_JWT_KEY_ID}
-    ppac-ios-jwt-signing-key: ${PPAC_IOS_JWT_SIGNING_KEY}
-    ppac-ios-jwt-team-id: ${PPAC_IOS_JWT_TEAM_ID}
-    device-api-url: ${APPLE_DEVICE_API_URL:https://api.devicecheck.apple.com/v1}
+    ppac-ios-jwt-key-id: ${PPAC_IOS_JWT_KEY_ID:test}
+    ppac-ios-jwt-signing-key: ${PPAC_IOS_JWT_SIGNING_KEY:-----BEGIN PRIVATE KEY-----MIGEAgEAMBAGByqGSM49AgEGBSuBBAAKBG0wawIBAQQgIxxApfOrv/gAFMEton3qHmkFBkTxrSf1w6qcsstEqc6hRANCAAREIZWZF/HQj1jtfqJkR6uHkEEI6i7TE13EcG8lxTSIbgZ8hmBhUWESbDFQUdXlOLYJJFYoziCXJwiwq3Rnm2s/-----END PRIVATE KEY-----}
+    ppac-ios-jwt-team-id: ${PPAC_IOS_JWT_TEAM_ID:test}
+    device-api-url: ${APPLE_DEVICE_API_URL:http://localhost:8051}
     min_device_token_length: ${PPAC_IOS_DEVICE_TOKEN_MIN_LENGTH:2500}
     max_device_token_length: ${PPAC_IOS_DEVICE_TOKEN_MAX_LENGTH:3500}
     api-token-rate-limit-seconds: ${PPAC_IOS_API_TOKEN_RATE_LIMIT_SECONDS:86100}
